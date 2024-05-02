@@ -27,34 +27,42 @@ url = settings.google_form_url
 count = settings.answers_count
 done = 0
 
+
 def auto_answer():
-    questions = driver.find_elements(By.CLASS_NAME, 'Qr7Oae')
-    for question in questions:
-        answers = question.find_elements(By.CLASS_NAME, 'AB7Lab')
-        if answers:  # Check if the list is not empty
-            choice = random.randint(0, len(answers) - 1)
-            driver.execute_script("arguments[0].click();", answers[choice])
+    while True:
+        try:
+            questions = driver.find_elements(By.CLASS_NAME, 'Qr7Oae')
+            for question in questions:
+                answers = question.find_elements(By.CLASS_NAME, 'AB7Lab')
+                if answers:  # check question
+                    #time.sleep(2)  # 2 sec per choice
+                    choice = random.randint(0, len(answers) - 1)
+                    driver.execute_script("arguments[0].click();", answers[choice])
+
+            next_button = driver.find_elements(By.XPATH, "//*[text()='Susunod']")
+            if len(next_button) > 0:
+                # chek next
+                next_button[0].click()
+                #time.sleep(2)   # wait 2
+                  
+            else:
+                # if next = 1 submit
+                submit = driver.find_element(By.XPATH, "//*[text()='Submit']")
+                driver.execute_script("arguments[0].click();", submit)
+                break
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            break
 
 while done < count:
     try:
         driver.get(url=url)
         time.sleep(1)
         auto_answer()
-        next_button = driver.find_elements(By.XPATH, "//*[text()='Susunod']")
-        if len(next_button) > 0:
-            # If 'Next' button is present, click it
-            next_button[0].click()
-            auto_answer()
-        else:
-            # If 'Next' button is not present, click 'Submit'
-            submit = driver.find_element(By.XPATH, "//*[text()='Submit']")
-            submit.click()
-
-
         done += 1
         print(f'{done}/{count}')
 
-    except UnexpectedAlertPresentException:
+        # check pop up
         try:
             time.sleep(2)
             alert = driver.switch_to.alert
@@ -63,4 +71,8 @@ while done < count:
             print("Unexpected alert found and accepted.")
         except NoAlertPresentException:
             print("No alert found, Moving on...")
-        
+
+    except UnexpectedAlertPresentException:
+        print("Unexpected alert found, Moving on...")
+#git config --global user.email "you@example.com"
+#  git config --global user.name "Your Name"
